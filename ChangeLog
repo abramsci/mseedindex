@@ -1,3 +1,7 @@
+2025.234:
+	- Update libmseed to v3.1.7 with fix for invalid time stamps in v2 record
+  blockettes.
+
 2025.160: 3.0.7
 	- Add GitHub workflow to build and publish to PyPI
 	- Update sqlite to v3.50.1

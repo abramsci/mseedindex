@@ -1340,8 +1340,8 @@ SyncSQLiteFileSeries (sqlite3 *dbconn, struct filelink *flp)
   if (dbconn)
   {
     /* Create time strings for earliest and latest times for the file */
-    if (!ms_nstime2timestr (flp->earliest, earliest, ISOMONTHDAY, NANO_MICRO_NONE) ||
-        !ms_nstime2timestr (flp->latest, latest, ISOMONTHDAY, NANO_MICRO_NONE))
+    if (!ms_nstime2timestr_n (flp->earliest, earliest, sizeof (earliest), ISOMONTHDAY, NANO_MICRO_NONE) ||
+        !ms_nstime2timestr_n (flp->latest, latest, sizeof (latest), ISOMONTHDAY, NANO_MICRO_NONE))
     {
       ms_log (2, "Cannot create earliest/latest time strings for %s\n", flp->filename);
       return -1;
@@ -1645,11 +1645,11 @@ SyncSQLiteFileSeries (sqlite3 *dbconn, struct filelink *flp)
       char scannedstr[50];
 
       /* Create time strings for SQLite time fields */
-      ms_nstime2timestr (sd->earliest, starttimestr, ISOMONTHDAY, NANO_MICRO_NONE);
-      ms_nstime2timestr (sd->latest, endtimestr, ISOMONTHDAY, NANO_MICRO_NONE);
-      ms_nstime2timestr (MS_EPOCH2NSTIME (flp->filemodtime), filemodtimestr, ISOMONTHDAY, NONE);
-      ms_nstime2timestr (MS_EPOCH2NSTIME (sd->updated), updatedstr, ISOMONTHDAY, NONE);
-      ms_nstime2timestr (MS_EPOCH2NSTIME (flp->scantime), scannedstr, ISOMONTHDAY, NONE);
+      ms_nstime2timestr_n (sd->earliest, starttimestr, sizeof (starttimestr), ISOMONTHDAY, NANO_MICRO_NONE);
+      ms_nstime2timestr_n (sd->latest, endtimestr, sizeof (endtimestr), ISOMONTHDAY, NANO_MICRO_NONE);
+      ms_nstime2timestr_n (MS_EPOCH2NSTIME (flp->filemodtime), filemodtimestr, sizeof (filemodtimestr), ISOMONTHDAY, NONE);
+      ms_nstime2timestr_n (MS_EPOCH2NSTIME (sd->updated), updatedstr, sizeof (updatedstr), ISOMONTHDAY, NONE);
+      ms_nstime2timestr_n (MS_EPOCH2NSTIME (flp->scantime), scannedstr, sizeof (scannedstr), ISOMONTHDAY, NONE);
 
       /* Insert new row */
       rv = SQLiteExec (dbconn, NULL, NULL, &errmsg,
@@ -1920,9 +1920,9 @@ OutputJSON (const char *filename)
       yyjson_mut_ptr_add (content, "/source_id", yyjson_mut_strcpy (rootdoc, secid->sid), rootdoc);
 
       /* Create start and end and other time strings */
-      ms_nstime2timestr (sd->earliest, start_string, ISOMONTHDAY_Z, NANO_MICRO);
-      ms_nstime2timestr (sd->latest, end_string, ISOMONTHDAY_Z, NANO_MICRO);
-      ms_nstime2timestr (MS_EPOCH2NSTIME(sd->updated), updated, ISOMONTHDAY_Z, NONE);
+      ms_nstime2timestr_n (sd->earliest, start_string, sizeof (start_string), ISOMONTHDAY_Z, NANO_MICRO);
+      ms_nstime2timestr_n (sd->latest, end_string, sizeof (end_string), ISOMONTHDAY_Z, NANO_MICRO);
+      ms_nstime2timestr_n (MS_EPOCH2NSTIME (sd->updated), updated, sizeof (updated), ISOMONTHDAY_Z, NONE);
 
       yyjson_mut_ptr_add (content, "/start_string", yyjson_mut_strcpy (rootdoc, start_string), rootdoc);
       yyjson_mut_ptr_add (content, "/end_string", yyjson_mut_strcpy (rootdoc, end_string), rootdoc);
@@ -2009,15 +2009,15 @@ OutputJSON (const char *filename)
 
     if (flp->filemodtime)
     {
-      ms_nstime2timestr (MS_EPOCH2NSTIME (flp->filemodtime), pathmod, ISOMONTHDAY_Z, NONE);
+      ms_nstime2timestr_n (MS_EPOCH2NSTIME (flp->filemodtime), pathmod, sizeof (pathmod), ISOMONTHDAY_Z, NONE);
       yyjson_mut_ptr_add (pathobj, "/path_modtime", yyjson_mut_strcpy (rootdoc, pathmod), rootdoc);
     }
 
-    ms_nstime2timestr (MS_EPOCH2NSTIME (flp->scantime), scanned, ISOMONTHDAY_Z, NONE);
+    ms_nstime2timestr_n (MS_EPOCH2NSTIME (flp->scantime), scanned, sizeof (scanned), ISOMONTHDAY_Z, NONE);
     yyjson_mut_ptr_add (pathobj, "/path_indextime", yyjson_mut_strcpy (rootdoc, scanned), rootdoc);
 
-    ms_nstime2timestr (earliest_ts, start_string, ISOMONTHDAY_Z, NANO_MICRO);
-    ms_nstime2timestr (latest_ts, end_string, ISOMONTHDAY_Z, NANO_MICRO);
+    ms_nstime2timestr_n (earliest_ts, start_string, sizeof (start_string), ISOMONTHDAY_Z, NANO_MICRO);
+    ms_nstime2timestr_n (latest_ts, end_string, sizeof (end_string), ISOMONTHDAY_Z, NANO_MICRO);
 
     yyjson_mut_ptr_add (pathobj, "/start_string", yyjson_mut_strcpy (rootdoc, start_string), rootdoc);
     yyjson_mut_ptr_add (pathobj, "/end_string", yyjson_mut_strcpy (rootdoc, end_string), rootdoc);
@@ -2112,18 +2112,18 @@ local_mstl_printtracelist (MS3TraceList *mstl, flag timeformat)
     }
     else if (timeformat == 1)
     {
-      if (ms_nstime2timestr (sd->earliest, stime, ISOMONTHDAY, NANO_MICRO_NONE) == NULL)
+      if (ms_nstime2timestr_n (sd->earliest, stime, sizeof (stime), ISOMONTHDAY, NANO_MICRO_NONE) == NULL)
         ms_log (2, "Cannot convert earliest time for %s\n", secid->sid);
 
-      if (ms_nstime2timestr (sd->latest, etime, ISOMONTHDAY, NANO_MICRO_NONE) == NULL)
+      if (ms_nstime2timestr_n (sd->latest, etime, sizeof (etime), ISOMONTHDAY, NANO_MICRO_NONE) == NULL)
         ms_log (2, "Cannot convert latest time for %s\n", secid->sid);
     }
     else
     {
-      if (ms_nstime2timestr (sd->earliest, stime, SEEDORDINAL, NANO_MICRO_NONE) == NULL)
+      if (ms_nstime2timestr_n (sd->earliest, stime, sizeof (stime), SEEDORDINAL, NANO_MICRO_NONE) == NULL)
         ms_log (2, "Cannot convert earliest time for %s\n", secid->sid);
 
-      if (ms_nstime2timestr (sd->latest, etime, SEEDORDINAL, NANO_MICRO_NONE) == NULL)
+      if (ms_nstime2timestr_n (sd->latest, etime, sizeof (etime), SEEDORDINAL, NANO_MICRO_NONE) == NULL)
         ms_log (2, "Cannot convert latest time for %s\n", secid->sid);
     }
 
@@ -2140,7 +2140,7 @@ local_mstl_printtracelist (MS3TraceList *mstl, flag timeformat)
       {
         snprintf (stime, sizeof (stime), "%.6f", (double)MS_NSTIME2EPOCH (tindex->time));
 
-        if (ms_nstime2timestr (tindex->time, etime, ISOMONTHDAY, NANO_MICRO_NONE) == NULL)
+        if (ms_nstime2timestr_n (tindex->time, etime, sizeof (etime), ISOMONTHDAY, NANO_MICRO_NONE) == NULL)
           ms_log (2, "Cannot convert index time for %s\n", secid->sid);
 
         ms_log (0, "  %s (%s) - %lld\n", stime, etime, (long long int)tindex->byteoffset);
@@ -2156,10 +2156,10 @@ local_mstl_printtracelist (MS3TraceList *mstl, flag timeformat)
       seg = sd->spans->traces.next[0]->first;
       while (seg)
       {
-        if (ms_nstime2timestr (seg->starttime, stime, ISOMONTHDAY, NANO_MICRO_NONE) == NULL)
+        if (ms_nstime2timestr_n (seg->starttime, stime, sizeof (stime), ISOMONTHDAY, NANO_MICRO_NONE) == NULL)
           ms_log (2, "Cannot convert span start time for %s\n", secid->sid);
 
-        if (ms_nstime2timestr (seg->endtime, etime, ISOMONTHDAY, NANO_MICRO_NONE) == NULL)
+        if (ms_nstime2timestr_n (seg->endtime, etime, sizeof (etime), ISOMONTHDAY, NANO_MICRO_NONE) == NULL)
           ms_log (2, "Cannot convert span end time for %s\n", secid->sid);
 
         ms_log (0, "  %s - %s\n", stime, etime);
