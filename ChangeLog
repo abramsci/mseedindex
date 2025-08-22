@@ -1,6 +1,8 @@
 2025.234:
+	- Limit float point values to single precision to avoid unrealistically
+	high precision values in the output.
 	- Update libmseed to v3.1.7 with fix for invalid time stamps in v2 record
-  blockettes.
+	blockettes.
 
 2025.160: 3.0.7
 	- Add GitHub workflow to build and publish to PyPI

@@ -2036,6 +2036,10 @@ OutputJSON (const char *filename)
     yyjson_write_err err;
     size_t serialsize = 0;
 
+  /* Limit float point values to single precision to avoid unrealistically
+   * high precision values in the output. */
+  flg |= YYJSON_WRITE_FP_TO_FLOAT;
+
     /* Serialize JSON to string, pretty if verbose */
     serialized = yyjson_mut_write_opts (rootdoc, flg, NULL, &serialsize, &err);
 
