@@ -1,4 +1,4 @@
-2025.234:
+2025.234: 3.0.8
 	- Limit float point values to single precision to avoid unrealistically
 	high precision values in the output.
 	- Update libmseed to v3.1.7 with fix for invalid time stamps in v2 record
